@@ -1,4 +1,4 @@
-package nl.jouwserver.core;
+// package nl.jouwserver.core;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
