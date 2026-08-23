@@ -19,10 +19,11 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Download Purpur API Dependency
+     - name: Download Purpur API Dependency
       run: |
         mkdir -p lib
-        curl -s https://purpurmc.org -o lib/purpur.jar
+        curl -sL "https://purpurmc.org" -o lib/purpur.jar
+
 
     - name: Compileer de Java Broncode naar JAR
       run: |
