@@ -1,0 +1,39 @@
+name: Minecraft Plugin Compiler
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Code ophalen van GitHub
+      uses: actions/checkout@v4
+
+    - name: Java compiler installeren
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Download Purpur API Dependency
+      run: |
+        mkdir -p lib
+        curl -s https://purpurmc.org -o lib/purpur.jar
+
+    - name: Compileer de Java Broncode naar JAR
+      run: |
+        mkdir -p out
+        javac -d out -cp "lib/purpur.jar" ServerCore.java
+        cp plugin.yml out/
+        cd out
+        jar cf ../ServerCore.jar *
+
+    - name: Lever het voltooide JAR-bestand af
+      uses: actions/upload-artifact@v4
+      with:
+        name: ServerCore-Plugin
+        path: ServerCore.jar
