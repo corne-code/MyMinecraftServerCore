@@ -1,0 +1,15 @@
+name: ServerCore
+version: 1.0
+main: nl.jouwserver.core.ServerCore
+api-version: 1.20
+commands:
+  skyblockmenu:
+    description: Opent het Skyblock eiland selectiemenu.
+  shop:
+    description: Opent de in-game server winkel.
+  balance:
+    description: Bekijk je huidige bankrekening.
+  spawn:
+    description: Teleporteer direct terug naar de spawn.
+  claim:
+    description: Informatie over het claimen van land.
