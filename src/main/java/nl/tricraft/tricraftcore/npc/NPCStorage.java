@@ -13,7 +13,6 @@ public class NPCStorage {
 
     private final JavaPlugin plugin;
     private final NPCManager npcManager;
-
     private final File file;
 
     public NPCStorage(
@@ -23,7 +22,7 @@ public class NPCStorage {
         this.plugin = plugin;
         this.npcManager = npcManager;
 
-        file = new File(
+        this.file = new File(
                 plugin.getDataFolder(),
                 "npcs.yml"
         );
@@ -49,11 +48,6 @@ public class NPCStorage {
             config.set(
                     path + ".name",
                     npc.getName()
-            );
-
-            config.set(
-                    path + ".type",
-                    npc.getType().name()
             );
 
             config.set(
@@ -85,9 +79,41 @@ public class NPCStorage {
                     path + ".pitch",
                     location.getPitch()
             );
+
+            // Linkermuisklik
+            config.set(
+                    path + ".leftClick.type",
+                    npc.getLeftClickAction()
+                            .getType()
+                            .name()
+            );
+
+            config.set(
+                    path + ".leftClick.value",
+                    npc.getLeftClickAction()
+                            .getValue()
+            );
+
+            // Rechtermuisklik
+            config.set(
+                    path + ".rightClick.type",
+                    npc.getRightClickAction()
+                            .getType()
+                            .name()
+            );
+
+            config.set(
+                    path + ".rightClick.value",
+                    npc.getRightClickAction()
+                            .getValue()
+            );
         }
 
         try {
+
+            if (!plugin.getDataFolder().exists()) {
+                plugin.getDataFolder().mkdirs();
+            }
 
             config.save(file);
 
@@ -127,20 +153,13 @@ public class NPCStorage {
                             path + ".name"
                     );
 
-            String typeName =
-                    config.getString(
-                            path + ".type"
-                    );
-
             String worldName =
                     config.getString(
                             path + ".world"
                     );
 
             if (name == null
-                    || typeName == null
                     || worldName == null) {
-
                 continue;
             }
 
@@ -195,31 +214,80 @@ public class NPCStorage {
                             pitch
                     );
 
-            NPCType type;
-
-            try {
-
-                type = NPCType.valueOf(
-                        typeName.toUpperCase()
-                );
-
-            } catch (IllegalArgumentException e) {
-
-                plugin.getLogger().warning(
-                        "Ongeldig NPC-type voor "
-                                + name
-                );
-
-                continue;
-            }
-
             NPCData npc =
                     new NPCData(
                             id,
                             name,
-                            type,
                             location
                     );
+
+            // Linkermuisklik laden
+            String leftType =
+                    config.getString(
+                            path + ".leftClick.type",
+                            "NONE"
+                    );
+
+            String leftValue =
+                    config.getString(
+                            path + ".leftClick.value",
+                            ""
+                    );
+
+            try {
+
+                npc.setLeftClickAction(
+                        new NPCAction(
+                                NPCActionType.valueOf(
+                                        leftType.toUpperCase()
+                                ),
+                                leftValue
+                        )
+                );
+
+            } catch (IllegalArgumentException e) {
+
+                npc.setLeftClickAction(
+                        new NPCAction(
+                                NPCActionType.NONE,
+                                ""
+                        )
+                );
+            }
+
+            // Rechtermuisklik laden
+            String rightType =
+                    config.getString(
+                            path + ".rightClick.type",
+                            "NONE"
+                    );
+
+            String rightValue =
+                    config.getString(
+                            path + ".rightClick.value",
+                            ""
+                    );
+
+            try {
+
+                npc.setRightClickAction(
+                        new NPCAction(
+                                NPCActionType.valueOf(
+                                        rightType.toUpperCase()
+                                ),
+                                rightValue
+                        )
+                );
+
+            } catch (IllegalArgumentException e) {
+
+                npc.setRightClickAction(
+                        new NPCAction(
+                                NPCActionType.NONE,
+                                ""
+                        )
+                );
+            }
 
             npcManager.addNPC(npc);
         }
