@@ -26,5 +26,14 @@ public class NPCManager {
 
     public boolean exists(String id) {
         return npcs.containsKey(id.toLowerCase());
+    public NPCData getNPCById(String id) {
+
+    for (NPCData npc : npcs.values()) {
+
+        if (npc.getId().equalsIgnoreCase(id)) {
+            return npc;
+        }
     }
+
+    return null;
 }
