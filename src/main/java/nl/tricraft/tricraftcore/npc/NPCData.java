@@ -5,47 +5,90 @@ import org.bukkit.Location;
 public class NPCData {
 
     private final String id;
+
     private String name;
-    private NPCType type;
     private Location location;
+
+    private NPCAction leftClickAction;
+    private NPCAction rightClickAction;
 
     public NPCData(
             String id,
             String name,
-            NPCType type,
             Location location
     ) {
         this.id = id;
         this.name = name;
-        this.type = type;
         this.location = location;
+
+        this.leftClickAction = new NPCAction(
+                NPCActionType.NONE,
+                ""
+        );
+
+        this.rightClickAction = new NPCAction(
+                NPCActionType.NONE,
+                ""
+        );
     }
+
+    // =========================
+    // ID
+    // =========================
 
     public String getId() {
         return id;
     }
 
+    // =========================
+    // NAAM
+    // =========================
+
     public String getName() {
         return name;
-    }
-
-    public NPCType getType() {
-        return type;
-    }
-
-    public Location getLocation() {
-        return location;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setType(NPCType type) {
-        this.type = type;
+    // =========================
+    // LOCATIE
+    // =========================
+
+    public Location getLocation() {
+        return location;
     }
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    // =========================
+    // LINKERKLIK
+    // =========================
+
+    public NPCAction getLeftClickAction() {
+        return leftClickAction;
+    }
+
+    public void setLeftClickAction(
+            NPCAction action
+    ) {
+        this.leftClickAction = action;
+    }
+
+    // =========================
+    // RECHTERKLIK
+    // =========================
+
+    public NPCAction getRightClickAction() {
+        return rightClickAction;
+    }
+
+    public void setRightClickAction(
+            NPCAction action
+    ) {
+        this.rightClickAction = action;
     }
 }
