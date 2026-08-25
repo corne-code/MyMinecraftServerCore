@@ -48,32 +48,26 @@ public class NPCCommand implements CommandExecutor {
         switch (args[0].toLowerCase()) {
 
             case "create":
-
                 createNPC(player, args);
                 break;
 
             case "list":
-
                 listNPCs(player);
                 break;
 
             case "remove":
-
                 removeNPC(player, args);
                 break;
 
             case "rename":
-
                 renameNPC(player, args);
                 break;
 
             case "move":
-
                 moveNPC(player, args);
                 break;
 
             default:
-
                 sendHelp(player);
                 break;
         }
@@ -81,46 +75,26 @@ public class NPCCommand implements CommandExecutor {
         return true;
     }
 
-    private void createNPC(Player player, String[] args) {
+    private void createNPC(
+            Player player,
+            String[] args
+    ) {
 
-        if (args.length < 3) {
+        if (args.length != 2) {
             player.sendMessage(
                     ChatColor.RED
-                            + "Gebruik: /npc create <type> <naam>"
+                            + "Gebruik: /npc create <naam>"
             );
             return;
         }
 
-        NPCType type;
-
-        try {
-            type = NPCType.valueOf(
-                    args[1].toUpperCase()
-            );
-        } catch (IllegalArgumentException e) {
-
-            player.sendMessage(
-                    ChatColor.RED
-                            + "Ongeldig NPC-type."
-            );
-
-            player.sendMessage(
-                    ChatColor.GRAY
-                            + "Gebruik: survival, skyblock, pvp of shop."
-            );
-
-            return;
-        }
-
-        String name = args[2];
+        String name = args[1];
 
         if (npcManager.exists(name)) {
-
             player.sendMessage(
                     ChatColor.RED
                             + "Er bestaat al een NPC met deze naam."
             );
-
             return;
         }
 
@@ -130,7 +104,6 @@ public class NPCCommand implements CommandExecutor {
         NPCData npc = new NPCData(
                 UUID.randomUUID().toString(),
                 name,
-                type,
                 location
         );
 
@@ -147,9 +120,12 @@ public class NPCCommand implements CommandExecutor {
 
         player.sendMessage(
                 ChatColor.GRAY
-                        + "Type: "
-                        + ChatColor.WHITE
-                        + type.name()
+                        + "Gebruik "
+                        + ChatColor.YELLOW
+                        + "/npc edit "
+                        + name
+                        + ChatColor.GRAY
+                        + " om hem in te stellen."
         );
     }
 
@@ -176,9 +152,9 @@ public class NPCCommand implements CommandExecutor {
                     ChatColor.YELLOW
                             + npc.getName()
                             + ChatColor.GRAY
-                            + " - "
+                            + " | "
                             + ChatColor.WHITE
-                            + npc.getType().name()
+                            + npc.getLocation().getWorld().getName()
             );
         }
     }
@@ -189,24 +165,20 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (args.length != 2) {
-
             player.sendMessage(
                     ChatColor.RED
                             + "Gebruik: /npc remove <naam>"
             );
-
             return;
         }
 
         String name = args[1];
 
         if (!npcManager.exists(name)) {
-
             player.sendMessage(
                     ChatColor.RED
                             + "Deze NPC bestaat niet."
             );
-
             return;
         }
 
@@ -228,12 +200,10 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (args.length != 3) {
-
             player.sendMessage(
                     ChatColor.RED
                             + "Gebruik: /npc rename <naam> <nieuweNaam>"
             );
-
             return;
         }
 
@@ -241,27 +211,22 @@ public class NPCCommand implements CommandExecutor {
                 npcManager.getNPC(args[1]);
 
         if (npc == null) {
-
             player.sendMessage(
                     ChatColor.RED
                             + "Deze NPC bestaat niet."
             );
-
             return;
         }
 
         if (npcManager.exists(args[2])) {
-
             player.sendMessage(
                     ChatColor.RED
-                            + "Die nieuwe naam bestaat al."
+                            + "Die naam wordt al gebruikt."
             );
-
             return;
         }
 
-        String oldName =
-                npc.getName();
+        String oldName = npc.getName();
 
         npcManager.removeNPC(oldName);
 
@@ -271,15 +236,9 @@ public class NPCCommand implements CommandExecutor {
 
         player.sendMessage(
                 ChatColor.GREEN
-                        + "NPC hernoemd van "
-                        + ChatColor.YELLOW
-                        + oldName
-                        + ChatColor.GREEN
-                        + " naar "
+                        + "NPC hernoemd naar "
                         + ChatColor.YELLOW
                         + args[2]
-                        + ChatColor.GREEN
-                        + "."
         );
     }
 
@@ -289,12 +248,10 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (args.length != 2) {
-
             player.sendMessage(
                     ChatColor.RED
                             + "Gebruik: /npc move <naam>"
             );
-
             return;
         }
 
@@ -302,12 +259,10 @@ public class NPCCommand implements CommandExecutor {
                 npcManager.getNPC(args[1]);
 
         if (npc == null) {
-
             player.sendMessage(
                     ChatColor.RED
                             + "Deze NPC bestaat niet."
             );
-
             return;
         }
 
@@ -334,7 +289,7 @@ public class NPCCommand implements CommandExecutor {
 
         player.sendMessage(
                 ChatColor.YELLOW
-                        + "/npc create <type> <naam>"
+                        + "/npc create <naam>"
         );
 
         player.sendMessage(
