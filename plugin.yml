@@ -1,15 +1,30 @@
 name: ServerCore
 version: 1.0
-main: ServerCore
-api-version: 1.20
+main: nl.jouwserver.core.ServerCore
+api-version: '1.20'
+
 commands:
   skyblockmenu:
     description: Opent het Skyblock eiland selectiemenu.
+
   shop:
     description: Opent de in-game server winkel.
+
   balance:
     description: Bekijk je huidige bankrekening.
+
   spawn:
     description: Teleporteer direct terug naar de spawn.
+
   claim:
     description: Informatie over het claimen van land.
+
+  npc:
+    description: Beheer de Tricraft NPC's.
+    usage: /npc <create|edit|list|move|rename|remove>
+    permission: tricraft.npc
+
+permissions:
+  tricraft.npc:
+    description: Hiermee kan je NPC's beheren.
+    default: op
