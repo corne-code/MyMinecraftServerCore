@@ -13,6 +13,7 @@
 
     <name>ServerCore</name>
     <description>TriCraft ServerCore plugin</description>
+    <description>TriCraft ServerCore plugin v2</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
