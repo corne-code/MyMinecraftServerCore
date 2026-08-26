@@ -10,6 +10,9 @@ public class NPCEditorManager {
 
     private final Map<UUID, String> editingNPCs = new HashMap<>();
 
+    private final Map<UUID, Boolean> editingLeftClick =
+            new HashMap<>();
+
     public void startEditing(
             Player player,
             NPCData npc
@@ -18,12 +21,20 @@ public class NPCEditorManager {
                 player.getUniqueId(),
                 npc.getId()
         );
+
+        editingLeftClick.put(
+                player.getUniqueId(),
+                true
+        );
     }
 
     public void stopEditing(Player player) {
-        editingNPCs.remove(
-                player.getUniqueId()
-        );
+
+        UUID uuid =
+                player.getUniqueId();
+
+        editingNPCs.remove(uuid);
+        editingLeftClick.remove(uuid);
     }
 
     public NPCData getEditingNPC(
@@ -44,8 +55,30 @@ public class NPCEditorManager {
     }
 
     public boolean isEditing(Player player) {
+
         return editingNPCs.containsKey(
                 player.getUniqueId()
+        );
+    }
+
+    public void setEditingLeftClick(
+            Player player,
+            boolean leftClick
+    ) {
+
+        editingLeftClick.put(
+                player.getUniqueId(),
+                leftClick
+        );
+    }
+
+    public boolean isEditingLeftClick(
+            Player player
+    ) {
+
+        return editingLeftClick.getOrDefault(
+                player.getUniqueId(),
+                true
         );
     }
 }
