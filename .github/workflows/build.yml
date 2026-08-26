@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Stap 1: Haal de code op met de allernieuwste Node 24 ondersteunde actie
+    # Stap 1: Haal de code op met de actie die Node 24 ondersteunt
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Stap 2: Zet Java 25 op en schakel Maven caching uit om corrupte downloads te voorkomen
+    # Stap 2: Zet Java 25 op en koppel Maven caching los om fouten te vermijden
     - name: Set up JDK 25
       uses: actions/setup-java@v4
       with:
@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
-    # Stap 3: Bouw de plugin met de verplichte -U vlag om de Purpur 26.2 dependency te forceren
+    # Stap 3: Bouw de plugin met de verplichte -U vlag om weigeringen te negeren
     - name: Build with Maven
       run: mvn -B clean package -U
 
