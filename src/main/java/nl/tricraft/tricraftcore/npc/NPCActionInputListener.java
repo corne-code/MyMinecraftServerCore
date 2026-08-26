@@ -1,7 +1,6 @@
 package nl.tricraft.tricraftcore.npc;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,13 +34,14 @@ public class NPCActionInputListener implements Listener {
 
         String input = event.getMessage();
 
+        // Annuleren
         if (input.equalsIgnoreCase("cancel")) {
 
             editorManager.stopInput(player);
 
             player.sendMessage(
                     ChatColor.RED
-                            + "Actie instellen geannuleerd."
+                            + "NPC-actie geannuleerd."
             );
 
             return;
@@ -68,8 +68,22 @@ public class NPCActionInputListener implements Listener {
         NPCActionType type =
                 editorManager.getInputType(player);
 
+        if (type == null) {
+
+            editorManager.stopInput(player);
+
+            player.sendMessage(
+                    ChatColor.RED
+                            + "Er is geen actie geselecteerd."
+            );
+
+            return;
+        }
+
         boolean leftClick =
-                editorManager.isEditingLeftClick(player);
+                editorManager.isEditingLeftClick(
+                        player
+                );
 
         NPCAction action =
                 new NPCAction(
@@ -79,11 +93,15 @@ public class NPCActionInputListener implements Listener {
 
         if (leftClick) {
 
-            npc.setLeftClickAction(action);
+            npc.setLeftClickAction(
+                    action
+            );
 
         } else {
 
-            npc.setRightClickAction(action);
+            npc.setRightClickAction(
+                    action
+            );
         }
 
         editorManager.stopInput(player);
@@ -91,6 +109,20 @@ public class NPCActionInputListener implements Listener {
         player.sendMessage(
                 ChatColor.GREEN
                         + "NPC-actie opgeslagen."
+        );
+
+        player.sendMessage(
+                ChatColor.GRAY
+                        + "Type: "
+                        + ChatColor.YELLOW
+                        + type.name()
+        );
+
+        player.sendMessage(
+                ChatColor.GRAY
+                        + "Waarde: "
+                        + ChatColor.WHITE
+                        + input
         );
     }
 }
