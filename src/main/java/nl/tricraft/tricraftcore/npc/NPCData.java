@@ -7,9 +7,11 @@ public class NPCData {
     private final String id;
 
     private String name;
+
     private Location location;
 
     private NPCAction leftClickAction;
+
     private NPCAction rightClickAction;
 
     public NPCData(
@@ -21,15 +23,17 @@ public class NPCData {
         this.name = name;
         this.location = location;
 
-        this.leftClickAction = new NPCAction(
-                NPCActionType.NONE,
-                ""
-        );
+        this.leftClickAction =
+                new NPCAction(
+                        NPCActionType.NONE,
+                        ""
+                );
 
-        this.rightClickAction = new NPCAction(
-                NPCActionType.NONE,
-                ""
-        );
+        this.rightClickAction =
+                new NPCAction(
+                        NPCActionType.NONE,
+                        ""
+                );
     }
 
     // =========================
@@ -65,7 +69,7 @@ public class NPCData {
     }
 
     // =========================
-    // LINKERKLIK
+    // LINKERMUISKLIK
     // =========================
 
     public NPCAction getLeftClickAction() {
@@ -79,7 +83,7 @@ public class NPCData {
     }
 
     // =========================
-    // RECHTERKLIK
+    // RECHTERMUISKLIK
     // =========================
 
     public NPCAction getRightClickAction() {
