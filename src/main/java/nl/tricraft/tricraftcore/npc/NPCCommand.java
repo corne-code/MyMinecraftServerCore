@@ -12,9 +12,17 @@ import java.util.UUID;
 public class NPCCommand implements CommandExecutor {
 
     private final NPCManager npcManager;
+    private final NPCEditorManager editorManager;
+    private final NPCEditorGUI editorGUI;
 
-    public NPCCommand(NPCManager npcManager) {
+    public NPCCommand(
+            NPCManager npcManager,
+            NPCEditorManager editorManager,
+            NPCEditorGUI editorGUI
+    ) {
         this.npcManager = npcManager;
+        this.editorManager = editorManager;
+        this.editorGUI = editorGUI;
     }
 
     @Override
@@ -26,22 +34,28 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (!(sender instanceof Player player)) {
+
             sender.sendMessage(
                     "Dit commando kan alleen door een speler worden gebruikt."
             );
+
             return true;
         }
 
         if (!player.hasPermission("tricraft.npc")) {
+
             player.sendMessage(
                     ChatColor.RED
-                            + "Je hebt geen toestemming om NPC's te beheren."
+                            + "Je hebt geen toestemming."
             );
+
             return true;
         }
 
         if (args.length == 0) {
+
             sendHelp(player);
+
             return true;
         }
 
@@ -51,11 +65,16 @@ public class NPCCommand implements CommandExecutor {
                 createNPC(player, args);
                 break;
 
+            case "edit":
+                editNPC(player, args);
+                break;
+
             case "list":
                 listNPCs(player);
                 break;
 
             case "remove":
+            case "delete":
                 removeNPC(player, args);
                 break;
 
@@ -81,31 +100,36 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (args.length != 2) {
+
             player.sendMessage(
                     ChatColor.RED
                             + "Gebruik: /npc create <naam>"
             );
+
             return;
         }
 
         String name = args[1];
 
         if (npcManager.exists(name)) {
+
             player.sendMessage(
                     ChatColor.RED
-                            + "Er bestaat al een NPC met deze naam."
+                            + "Deze NPC bestaat al."
             );
+
             return;
         }
 
         Location location =
                 player.getLocation().clone();
 
-        NPCData npc = new NPCData(
-                UUID.randomUUID().toString(),
-                name,
-                location
-        );
+        NPCData npc =
+                new NPCData(
+                        UUID.randomUUID().toString(),
+                        name,
+                        location
+                );
 
         npcManager.addNPC(npc);
 
@@ -129,7 +153,48 @@ public class NPCCommand implements CommandExecutor {
         );
     }
 
-    private void listNPCs(Player player) {
+    private void editNPC(
+            Player player,
+            String[] args
+    ) {
+
+        if (args.length != 2) {
+
+            player.sendMessage(
+                    ChatColor.RED
+                            + "Gebruik: /npc edit <naam>"
+            );
+
+            return;
+        }
+
+        NPCData npc =
+                npcManager.getNPC(args[1]);
+
+        if (npc == null) {
+
+            player.sendMessage(
+                    ChatColor.RED
+                            + "Deze NPC bestaat niet."
+            );
+
+            return;
+        }
+
+        editorManager.startEditing(
+                player,
+                npc
+        );
+
+        editorGUI.open(
+                player,
+                npc
+        );
+    }
+
+    private void listNPCs(
+            Player player
+    ) {
 
         if (npcManager.getNPCs().isEmpty()) {
 
@@ -146,7 +211,8 @@ public class NPCCommand implements CommandExecutor {
                         + "===== Tricraft NPC's ====="
         );
 
-        for (NPCData npc : npcManager.getNPCs()) {
+        for (NPCData npc :
+                npcManager.getNPCs()) {
 
             player.sendMessage(
                     ChatColor.YELLOW
@@ -154,7 +220,9 @@ public class NPCCommand implements CommandExecutor {
                             + ChatColor.GRAY
                             + " | "
                             + ChatColor.WHITE
-                            + npc.getLocation().getWorld().getName()
+                            + npc.getLocation()
+                                    .getWorld()
+                                    .getName()
             );
         }
     }
@@ -165,30 +233,41 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (args.length != 2) {
+
             player.sendMessage(
                     ChatColor.RED
                             + "Gebruik: /npc remove <naam>"
             );
+
             return;
         }
 
-        String name = args[1];
+        NPCData npc =
+                npcManager.getNPC(args[1]);
 
-        if (!npcManager.exists(name)) {
+        if (npc == null) {
+
             player.sendMessage(
                     ChatColor.RED
                             + "Deze NPC bestaat niet."
             );
+
             return;
         }
 
-        npcManager.removeNPC(name);
+        npcManager.removeNPC(
+                npc.getName()
+        );
+
+        editorManager.stopEditing(
+                player
+        );
 
         player.sendMessage(
                 ChatColor.GREEN
                         + "NPC "
                         + ChatColor.YELLOW
-                        + name
+                        + npc.getName()
                         + ChatColor.GREEN
                         + " verwijderd."
         );
@@ -200,10 +279,12 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (args.length != 3) {
+
             player.sendMessage(
                     ChatColor.RED
-                            + "Gebruik: /npc rename <naam> <nieuweNaam>"
+                            + "Gebruik: /npc rename <oudeNaam> <nieuweNaam>"
             );
+
             return;
         }
 
@@ -211,28 +292,26 @@ public class NPCCommand implements CommandExecutor {
                 npcManager.getNPC(args[1]);
 
         if (npc == null) {
+
             player.sendMessage(
                     ChatColor.RED
                             + "Deze NPC bestaat niet."
             );
+
             return;
         }
 
         if (npcManager.exists(args[2])) {
+
             player.sendMessage(
                     ChatColor.RED
                             + "Die naam wordt al gebruikt."
             );
+
             return;
         }
 
-        String oldName = npc.getName();
-
-        npcManager.removeNPC(oldName);
-
         npc.setName(args[2]);
-
-        npcManager.addNPC(npc);
 
         player.sendMessage(
                 ChatColor.GREEN
@@ -248,10 +327,12 @@ public class NPCCommand implements CommandExecutor {
     ) {
 
         if (args.length != 2) {
+
             player.sendMessage(
                     ChatColor.RED
                             + "Gebruik: /npc move <naam>"
             );
+
             return;
         }
 
@@ -259,10 +340,12 @@ public class NPCCommand implements CommandExecutor {
                 npcManager.getNPC(args[1]);
 
         if (npc == null) {
+
             player.sendMessage(
                     ChatColor.RED
                             + "Deze NPC bestaat niet."
             );
+
             return;
         }
 
@@ -272,15 +355,13 @@ public class NPCCommand implements CommandExecutor {
 
         player.sendMessage(
                 ChatColor.GREEN
-                        + "NPC "
-                        + ChatColor.YELLOW
-                        + npc.getName()
-                        + ChatColor.GREEN
-                        + " verplaatst."
+                        + "NPC verplaatst naar jouw locatie."
         );
     }
 
-    private void sendHelp(Player player) {
+    private void sendHelp(
+            Player player
+    ) {
 
         player.sendMessage(
                 ChatColor.DARK_AQUA
@@ -294,12 +375,17 @@ public class NPCCommand implements CommandExecutor {
 
         player.sendMessage(
                 ChatColor.YELLOW
+                        + "/npc edit <naam>"
+        );
+
+        player.sendMessage(
+                ChatColor.YELLOW
                         + "/npc list"
         );
 
         player.sendMessage(
                 ChatColor.YELLOW
-                        + "/npc remove <naam>"
+                        + "/npc move <naam>"
         );
 
         player.sendMessage(
@@ -309,7 +395,7 @@ public class NPCCommand implements CommandExecutor {
 
         player.sendMessage(
                 ChatColor.YELLOW
-                        + "/npc move <naam>"
+                        + "/npc remove <naam>"
         );
     }
 }
