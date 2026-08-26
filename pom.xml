@@ -27,7 +27,7 @@
             <url>https://repo.purpurmc.org/snapshots</url>
         </repository>
 
-        <!-- PaperMC Repository (als fallback voor onderliggende platform-APIs) -->
+        <!-- PaperMC Repository -->
         <repository>
             <id>papermc</id>
             <name>PaperMC Repository</name>
@@ -36,11 +36,11 @@
     </repositories>
 
     <dependencies>
-        <!-- Purpur API voor Minecraft 26.2 -->
+        <!-- Gecorrigeerde Purpur API voor Minecraft 26.2 -->
         <dependency>
             <groupId>org.purpurmc.purpur</groupId>
             <artifactId>purpur-api</artifactId>
-            <version>[26.2.build,)</version>
+            <version>26.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
