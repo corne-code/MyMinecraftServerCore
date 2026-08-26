@@ -5,7 +5,6 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager;
-import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -46,25 +45,23 @@ public class NPCSpawner {
             return;
         }
 
-        // Verwijder een bestaande NPC op dezelfde locatie
+        // Zoek een bestaande NPC met dezelfde ID
         for (Entity entity :
                 location.getWorld().getNearbyEntities(
                         location,
-                        1.0,
-                        2.0,
-                        1.0
+                        1.5,
+                        2.5,
+                        1.5
                 )) {
 
-            String existing =
+            String existingId =
                     entity.getPersistentDataContainer()
                             .get(
                                     npcKey,
                                     PersistentDataType.STRING
                             );
 
-            if (existing != null
-                    && existing.equals(npc.getId())) {
-
+            if (npc.getId().equals(existingId)) {
                 entity.remove();
             }
         }
@@ -75,10 +72,17 @@ public class NPCSpawner {
                         EntityType.VILLAGER
                 );
 
+        // NPC instellingen
         villager.setAI(false);
         villager.setInvulnerable(true);
         villager.setSilent(true);
         villager.setCollidable(false);
+        villager.setCanPickupItems(false);
+
+        // Geen normale villager trades
+        villager.setProfession(
+                Villager.Profession.NONE
+        );
 
         villager.setCustomName(
                 ChatColor.YELLOW
@@ -87,11 +91,48 @@ public class NPCSpawner {
 
         villager.setCustomNameVisible(true);
 
+        // NPC ID opslaan op de entity
         villager.getPersistentDataContainer()
                 .set(
                         npcKey,
                         PersistentDataType.STRING,
                         npc.getId()
                 );
+    }
+
+    public void removeNPC(NPCData npc) {
+
+        Location location =
+                npc.getLocation();
+
+        if (location.getWorld() == null) {
+            return;
+        }
+
+        for (Entity entity :
+                location.getWorld().getNearbyEntities(
+                        location,
+                        2.0,
+                        3.0,
+                        2.0
+                )) {
+
+            String existingId =
+                    entity.getPersistentDataContainer()
+                            .get(
+                                    npcKey,
+                                    PersistentDataType.STRING
+                            );
+
+            if (npc.getId().equals(existingId)) {
+                entity.remove();
+            }
+        }
+    }
+
+    public void respawnNPC(NPCData npc) {
+
+        removeNPC(npc);
+        spawnNPC(npc);
     }
 }
