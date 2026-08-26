@@ -12,12 +12,11 @@
     <packaging>jar</packaging>
 
     <name>ServerCore</name>
-    <description>TriCraft ServerCore plugin</description>
     <description>TriCraft ServerCore plugin v2</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
     <repositories>
@@ -25,23 +24,23 @@
         <repository>
             <id>purpurmc</id>
             <name>Purpur Maven Repository</name>
-            <url>https://repo.purpurmc.org/snapshots</url>
+            <url>https://purpurmc.org</url>
         </repository>
 
         <!-- PaperMC Repository -->
         <repository>
             <id>papermc</id>
             <name>PaperMC Repository</name>
-            <url>https://repo.papermc.io/repository/maven-public/</url>
+            <url>https://papermc.io</url>
         </repository>
     </repositories>
 
     <dependencies>
-        <!-- Gecorrigeerde Purpur API voor Minecraft 26.2 -->
+        <!-- Universele Purpur API Snapshot -->
         <dependency>
             <groupId>org.purpurmc.purpur</groupId>
             <artifactId>purpur-api</artifactId>
-            <version>26.2-R0.1-SNAPSHOT</version>
+            <version>1.21.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -50,27 +49,13 @@
         <finalName>ServerCore</finalName>
 
         <plugins>
-            <!-- Java compiler plugin ingesteld op Java 25 -->
+            <!-- Java compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.13.0</version>
                 <configuration>
-                    <release>25</release>
-                </configuration>
-            </plugin>
-
-            <!-- JAR packaging configuratie met Paperweight namespace -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <paperweight-mappings-namespace>mojang</paperweight-mappings-namespace>
-                        </manifestEntries>
-                    </archive>
+                    <release>21</release>
                 </configuration>
             </plugin>
         </plugins>
