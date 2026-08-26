@@ -1,4 +1,17 @@
-// package nl.jouwserver.core;
+package nl.jouwserver.core;
+
+import nl.tricraft.tricraftcore.npc.NPCActionGUI;
+import nl.tricraft.tricraftcore.npc.NPCActionInputListener;
+import nl.tricraft.tricraftcore.npc.NPCActionListener;
+import nl.tricraft.tricraftcore.npc.NPCCommand;
+import nl.tricraft.tricraftcore.npc.NPCEditorGUI;
+import nl.tricraft.tricraftcore.npc.NPCEditorListener;
+import nl.tricraft.tricraftcore.npc.NPCEditorManager;
+import nl.tricraft.tricraftcore.npc.NPCLeftClickListener;
+import nl.tricraft.tricraftcore.npc.NPCListener;
+import nl.tricraft.tricraftcore.npc.NPCManager;
+import nl.tricraft.tricraftcore.npc.NPCSpawner;
+import nl.tricraft.tricraftcore.npc.NPCStorage;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,179 +36,795 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class ServerCore extends JavaPlugin implements CommandExecutor, Listener {
+public class ServerCore extends JavaPlugin
+        implements CommandExecutor, Listener {
 
-    // Databases in het geheugen (Voor productie kun je dit later aan MySQL/SQLite koppelen)
-    private final HashMap<UUID, Double> economyBalances = new HashMap<>();
-    private final HashMap<UUID, Location> playerClaimsPos1 = new HashMap<>();
-    private final HashMap<UUID, Location> playerClaimsPos2 = new HashMap<>();
-    
-    private final String SKYBLOCK_MENU_TITLE = "§aSkyblock Eiland Selectie";
-    private final String SHOP_MENU_TITLE = "§6Server Economy Shop";
+    // =========================================
+    // ECONOMY
+    // =========================================
+
+    private final HashMap<UUID, Double> economyBalances =
+            new HashMap<>();
+
+    // =========================================
+    // CLAIMS
+    // =========================================
+
+    private final HashMap<UUID, Location> playerClaimsPos1 =
+            new HashMap<>();
+
+    private final HashMap<UUID, Location> playerClaimsPos2 =
+            new HashMap<>();
+
+    // =========================================
+    // GUI TITELS
+    // =========================================
+
+    private final String SKYBLOCK_MENU_TITLE =
+            "§aSkyblock Eiland Selectie";
+
+    private final String SHOP_MENU_TITLE =
+            "§6Server Economy Shop";
+
+    // =========================================
+    // NPC SYSTEEM
+    // =========================================
+
+    private NPCManager npcManager;
+
+    private NPCEditorManager npcEditorManager;
+
+    private NPCEditorGUI npcEditorGUI;
+
+    private NPCActionGUI npcActionGUI;
+
+    private NPCSpawner npcSpawner;
+
+    private NPCStorage npcStorage;
+
+
+    // =========================================
+    // ENABLE
+    // =========================================
 
     @Override
     public void onEnable() {
-        // Registreer commando's
-        getCommand("skyblockmenu").setExecutor(this);
-        getCommand("shop").setExecutor(this);
-        getCommand("balance").setExecutor(this);
-        getCommand("spawn").setExecutor(this);
-        getCommand("claim").setExecutor(this);
 
-        // Registreer events
-        getServer().getPluginManager().registerEvents(this, this);
-        getLogger().info("ServerCore is succesvol geladen! Hub, Economy en Portalen zijn actief.");
+        // -----------------------------------------
+        // BESTAANDE COMMANDO'S
+        // -----------------------------------------
+
+        registerCommand("skyblockmenu");
+        registerCommand("shop");
+        registerCommand("balance");
+        registerCommand("spawn");
+        registerCommand("claim");
+
+
+        // -----------------------------------------
+        // NPC MANAGERS
+        // -----------------------------------------
+
+        npcManager =
+                new NPCManager();
+
+        npcEditorManager =
+                new NPCEditorManager();
+
+        npcEditorGUI =
+                new NPCEditorGUI(
+                        npcManager
+                );
+
+        npcActionGUI =
+                new NPCActionGUI();
+
+        npcSpawner =
+                new NPCSpawner(
+                        this,
+                        npcManager
+                );
+
+        npcStorage =
+                new NPCStorage(
+                        this,
+                        npcManager
+                );
+
+
+        // -----------------------------------------
+        // NPC DATA LADEN
+        // -----------------------------------------
+
+        npcStorage.load();
+
+
+        // -----------------------------------------
+        // NPC'S SPAWNEN
+        // -----------------------------------------
+
+        npcSpawner.spawnAll();
+
+
+        // -----------------------------------------
+        // NPC LISTENERS
+        // -----------------------------------------
+
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        new NPCListener(
+                                this,
+                                npcManager
+                        ),
+                        this
+                );
+
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        new NPCLeftClickListener(
+                                this,
+                                npcManager
+                        ),
+                        this
+                );
+
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        new NPCEditorListener(
+                                npcManager,
+                                npcEditorManager,
+                                npcEditorGUI,
+                                npcActionGUI
+                        ),
+                        this
+                );
+
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        new NPCActionListener(
+                                npcManager,
+                                npcEditorManager
+                        ),
+                        this
+                );
+
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        new NPCActionInputListener(
+                                npcManager,
+                                npcEditorManager
+                        ),
+                        this
+                );
+
+
+        // -----------------------------------------
+        // NPC COMMAND
+        // -----------------------------------------
+
+        if (getCommand("npc") != null) {
+
+            getCommand("npc").setExecutor(
+                    new NPCCommand(
+                            npcManager,
+                            npcEditorManager,
+                            npcEditorGUI
+                    )
+            );
+        }
+
+
+        // -----------------------------------------
+        // SERVERCORE EVENTS
+        // -----------------------------------------
+
+        getServer()
+                .getPluginManager()
+                .registerEvents(
+                        this,
+                        this
+                );
+
+
+        getLogger().info(
+                "================================="
+        );
+
+        getLogger().info(
+                "ServerCore is geladen!"
+        );
+
+        getLogger().info(
+                "Economy: actief"
+        );
+
+        getLogger().info(
+                "Skyblock menu: actief"
+        );
+
+        getLogger().info(
+                "Shop: actief"
+        );
+
+        getLogger().info(
+                "Portalen: actief"
+        );
+
+        getLogger().info(
+                "NPC systeem: actief"
+        );
+
+        getLogger().info(
+                "================================="
+        );
     }
 
+
+    // =========================================
+    // COMMAND REGISTRATIE
+    // =========================================
+
+    private void registerCommand(
+            String name
+    ) {
+
+        if (getCommand(name) != null) {
+
+            getCommand(name)
+                    .setExecutor(this);
+        }
+    }
+
+
+    // =========================================
+    // DISABLE
+    // =========================================
+
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onDisable() {
+
+        if (npcStorage != null) {
+
+            npcStorage.save();
+        }
+
+        getLogger().info(
+                "NPC's opgeslagen."
+        );
+
+        getLogger().info(
+                "ServerCore is uitgeschakeld."
+        );
+    }
+
+
+    // =========================================
+    // COMMANDS
+    // =========================================
+
+    @Override
+    public boolean onCommand(
+            CommandSender sender,
+            Command cmd,
+            String label,
+            String[] args
+    ) {
+
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Alleen spelers kunnen dit uitvoeren.");
+
+            sender.sendMessage(
+                    "Alleen spelers kunnen dit uitvoeren."
+            );
+
             return true;
         }
-        Player player = (Player) sender;
 
-        // 1. SKYBLOCK MENU
-        if (cmd.getName().equalsIgnoreCase("skyblockmenu")) {
+        Player player =
+                (Player) sender;
+
+
+        // =====================================
+        // SKYBLOCK MENU
+        // =====================================
+
+        if (cmd.getName()
+                .equalsIgnoreCase("skyblockmenu")) {
+
             openSkyblockMenu(player);
+
             return true;
         }
 
-        // 2. ECONOMY SHOP MENU
-        if (cmd.getName().equalsIgnoreCase("shop")) {
+
+        // =====================================
+        // SHOP
+        // =====================================
+
+        if (cmd.getName()
+                .equalsIgnoreCase("shop")) {
+
             openShopMenu(player);
+
             return true;
         }
 
-        // 3. SALDO BEKIJKEN (/balance)
-        if (cmd.getName().equalsIgnoreCase("balance")) {
-            double bal = economyBalances.getOrDefault(player.getUniqueId(), 500.0); // 500 startgeld
-            player.sendMessage("§2Jouw saldo: §a€" + bal);
+
+        // =====================================
+        // BALANCE
+        // =====================================
+
+        if (cmd.getName()
+                .equalsIgnoreCase("balance")) {
+
+            double bal =
+                    economyBalances.getOrDefault(
+                            player.getUniqueId(),
+                            500.0
+                    );
+
+            player.sendMessage(
+                    "§2Jouw saldo: §a€"
+                            + bal
+            );
+
             return true;
         }
 
-        // 4. SPAWN TELEPORT (Vervangt EssentialsSpawn)
-        if (cmd.getName().equalsIgnoreCase("spawn")) {
-            Location spawnLoc = new Location(Bukkit.getWorld("Hub"), -533.5, 128.0, -673.5);
-            player.teleport(spawnLoc);
-            player.sendMessage("§eJe bent geteleporteerd naar de Spawn!");
-            player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
+
+        // =====================================
+        // SPAWN
+        // =====================================
+
+        if (cmd.getName()
+                .equalsIgnoreCase("spawn")) {
+
+            Location spawnLoc =
+                    new Location(
+                            Bukkit.getWorld("Hub"),
+                            -533.5,
+                            128.0,
+                            -673.5
+                    );
+
+            if (spawnLoc.getWorld() == null) {
+
+                player.sendMessage(
+                        "§cDe Hub wereld bestaat niet."
+                );
+
+                return true;
+            }
+
+            player.teleport(
+                    spawnLoc
+            );
+
+            player.sendMessage(
+                    "§eJe bent geteleporteerd naar de Spawn!"
+            );
+
+            player.playSound(
+                    player.getLocation(),
+                    Sound.ENTITY_ENDERMAN_TELEPORT,
+                    1.0f,
+                    1.0f
+            );
+
             return true;
         }
 
-        // 5. LAND CLAIMS BASIS
-        if (cmd.getName().equalsIgnoreCase("claim")) {
-            player.sendMessage("§eGebruik een gouden bijl om hoek 1 (links) en hoek 2 (rechts) te selecteren voor je claim!");
+
+        // =====================================
+        // CLAIM
+        // =====================================
+
+        if (cmd.getName()
+                .equalsIgnoreCase("claim")) {
+
+            player.sendMessage(
+                    "§eGebruik een gouden bijl om hoek 1 "
+                            + "(links) en hoek 2 "
+                            + "(rechts) te selecteren "
+                            + "voor je claim!"
+            );
+
             return true;
         }
+
 
         return false;
     }
 
-    // --- GUI MENUS ---
-    private void openSkyblockMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 9, SKYBLOCK_MENU_TITLE);
-        inv.setItem(2, createItem(Material.MAGMA_BLOCK, "§c§lVuur Eiland", "§7Klik om te starten op een vulkanisch eiland!"));
-        inv.setItem(4, createItem(Material.PRISMARINE_BRICKS, "§b§lWater Eiland", "§7Klik om te starten op een oceaan eiland!"));
-        inv.setItem(6, createItem(Material.GRASS_BLOCK, "§a§lAarde Eiland", "§7Klik om te starten op een klassiek eiland!"));
+
+    // =========================================
+    // SKYBLOCK MENU
+    // =========================================
+
+    private void openSkyblockMenu(
+            Player player
+    ) {
+
+        Inventory inv =
+                Bukkit.createInventory(
+                        null,
+                        9,
+                        SKYBLOCK_MENU_TITLE
+                );
+
+        inv.setItem(
+                2,
+                createItem(
+                        Material.MAGMA_BLOCK,
+                        "§c§lVuur Eiland",
+                        "§7Klik om te starten op een vulkanisch eiland!"
+                )
+        );
+
+        inv.setItem(
+                4,
+                createItem(
+                        Material.PRISMARINE_BRICKS,
+                        "§b§lWater Eiland",
+                        "§7Klik om te starten op een oceaan eiland!"
+                )
+        );
+
+        inv.setItem(
+                6,
+                createItem(
+                        Material.GRASS_BLOCK,
+                        "§a§lAarde Eiland",
+                        "§7Klik om te starten op een klassiek eiland!"
+                )
+        );
+
         player.openInventory(inv);
     }
 
-    private void openShopMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27, SHOP_MENU_TITLE);
-        // Voorbeeld items: Koop Diamond voor €100, Verkoop Cobblestone voor €5
-        inv.setItem(11, createItem(Material.DIAMOND, "§bKoop Diamant", "§7Prijs: §a€100\n§eKlik om te kopen!"));
-        inv.setItem(15, createItem(Material.COBBLESTONE, "§7Verkoop Cobblestone", "§7Opbrengst: §a€5\n§eKlik om 64 te verkopen!"));
+
+    // =========================================
+    // SHOP
+    // =========================================
+
+    private void openShopMenu(
+            Player player
+    ) {
+
+        Inventory inv =
+                Bukkit.createInventory(
+                        null,
+                        27,
+                        SHOP_MENU_TITLE
+                );
+
+        inv.setItem(
+                11,
+                createItem(
+                        Material.DIAMOND,
+                        "§bKoop Diamant",
+                        "§7Prijs: §a€100\n"
+                                + "§eKlik om te kopen!"
+                )
+        );
+
+        inv.setItem(
+                15,
+                createItem(
+                        Material.COBBLESTONE,
+                        "§7Verkoop Cobblestone",
+                        "§7Opbrengst: §a€5\n"
+                                + "§eKlik om 64 te verkopen!"
+                )
+        );
+
         player.openInventory(inv);
     }
 
-    private ItemStack createItem(Material mat, String name, String lore) {
-        ItemStack item = new ItemStack(mat);
-        ItemMeta meta = item.getItemMeta();
+
+    // =========================================
+    // ITEM MAKEN
+    // =========================================
+
+    private ItemStack createItem(
+            Material mat,
+            String name,
+            String lore
+    ) {
+
+        ItemStack item =
+                new ItemStack(mat);
+
+        ItemMeta meta =
+                item.getItemMeta();
+
         if (meta != null) {
+
             meta.setDisplayName(name);
-            meta.setLore(Arrays.asList(lore.split("\n")));
+
+            meta.setLore(
+                    Arrays.asList(
+                            lore.split("\n")
+                    )
+            );
+
             item.setItemMeta(meta);
         }
+
         return item;
     }
 
-    @EventHandler
-    public void onMenuClick(InventoryClickEvent event) {
-        if (event.getCurrentItem() == null) return;
-        Player player = (Player) event.getWhoClicked();
-        String title = event.getView().getTitle();
 
-        // Skyblock Menu Logica
-        if (title.equals(SKYBLOCK_MENU_TITLE)) {
+    // =========================================
+    // GUI CLICKS
+    // =========================================
+
+    @EventHandler
+    public void onMenuClick(
+            InventoryClickEvent event
+    ) {
+
+        if (event.getCurrentItem() == null) {
+            return;
+        }
+
+        if (!(event.getWhoClicked()
+                instanceof Player)) {
+
+            return;
+        }
+
+        Player player =
+                (Player) event.getWhoClicked();
+
+        String title =
+                event.getView().getTitle();
+
+
+        // =====================================
+        // SKYBLOCK
+        // =====================================
+
+        if (title.equals(
+                SKYBLOCK_MENU_TITLE
+        )) {
+
             event.setCancelled(true);
+
+            Material material =
+                    event.getCurrentItem()
+                            .getType();
+
             player.closeInventory();
-            if (event.getCurrentItem().getType() == Material.MAGMA_BLOCK) player.performCommand("is create vuur");
-            if (event.getCurrentItem().getType() == Material.PRISMARINE_BRICKS) player.performCommand("is create water");
-            if (event.getCurrentItem().getType() == Material.GRASS_BLOCK) player.performCommand("is create aarde");
+
+            if (material ==
+                    Material.MAGMA_BLOCK) {
+
+                player.performCommand(
+                        "is create vuur"
+                );
+            }
+
+            else if (material ==
+                    Material.PRISMARINE_BRICKS) {
+
+                player.performCommand(
+                        "is create water"
+                );
+            }
+
+            else if (material ==
+                    Material.GRASS_BLOCK) {
+
+                player.performCommand(
+                        "is create aarde"
+                );
+            }
+
+            return;
         }
 
-        // Shop Economy Logica
-        if (title.equals(SHOP_MENU_TITLE)) {
+
+        // =====================================
+        // SHOP
+        // =====================================
+
+        if (title.equals(
+                SHOP_MENU_TITLE
+        )) {
+
             event.setCancelled(true);
-            UUID uuid = player.getUniqueId();
-            double bal = economyBalances.getOrDefault(uuid, 500.0);
 
-            if (event.getCurrentItem().getType() == Material.DIAMOND) {
+            UUID uuid =
+                    player.getUniqueId();
+
+            double bal =
+                    economyBalances.getOrDefault(
+                            uuid,
+                            500.0
+                    );
+
+
+            // DIAMOND KOPEN
+
+            if (event.getCurrentItem()
+                    .getType()
+                    == Material.DIAMOND) {
+
                 if (bal >= 100.0) {
-                    economyBalances.put(uuid, bal - 100.0);
-                    player.getInventory().addItem(new ItemStack(Material.DIAMOND, 1));
-                    player.sendMessage("§aJe hebt 1 Diamant gekocht voor €100!");
+
+                    economyBalances.put(
+                            uuid,
+                            bal - 100.0
+                    );
+
+                    player.getInventory()
+                            .addItem(
+                                    new ItemStack(
+                                            Material.DIAMOND,
+                                            1
+                                    )
+                            );
+
+                    player.sendMessage(
+                            "§aJe hebt 1 Diamant gekocht voor €100!"
+                    );
+
                 } else {
-                    player.sendMessage("§cJe hebt niet genoeg geld!");
+
+                    player.sendMessage(
+                            "§cJe hebt niet genoeg geld!"
+                    );
                 }
             }
-            
-            if (event.getCurrentItem().getType() == Material.COBBLESTONE) {
-                if (player.getInventory().contains(Material.COBBLESTONE, 64)) {
-                    player.getInventory().removeItem(new ItemStack(Material.COBBLESTONE, 64));
-                    economyBalances.put(uuid, bal + 5.0);
-                    player.sendMessage("§aJe hebt 64 Cobblestone verkocht voor €5!");
+
+
+            // COBBLESTONE VERKOPEN
+
+            else if (event.getCurrentItem()
+                    .getType()
+                    == Material.COBBLESTONE) {
+
+                if (player.getInventory()
+                        .contains(
+                                Material.COBBLESTONE,
+                                64
+                        )) {
+
+                    player.getInventory()
+                            .removeItem(
+                                    new ItemStack(
+                                            Material.COBBLESTONE,
+                                            64
+                                    )
+                            );
+
+                    economyBalances.put(
+                            uuid,
+                            bal + 5.0
+                    );
+
+                    player.sendMessage(
+                            "§aJe hebt 64 Cobblestone verkocht voor €5!"
+                    );
+
                 } else {
-                    player.sendMessage("§cJe hebt geen 64 Cobblestone in je inventaris!");
+
+                    player.sendMessage(
+                            "§cJe hebt geen 64 Cobblestone in je inventaris!"
+                    );
                 }
             }
         }
     }
 
-    // --- INTEGRATIE PORTALEN (Zonder losse plugins!) ---
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-        Location loc = player.getLocation();
 
-        // Voorbeeld: Als een speler door de coördinaten van je Hub vuurportaal loopt
-        if (loc.getWorld().getName().equalsIgnoreCase("Hub")) {
-            // Controleer of de speler zich binnen de X en Z assen van de vuurpoort bevindt
-            if (loc.getBlockX() == -404 && loc.getBlockY() >= 129 && loc.getBlockY() <= 132 && loc.getBlockZ() >= -775 && loc.getBlockZ() <= -770) {
-                // Teleporteer ze direct of open het menu!
+    // =========================================
+    // PORTALEN
+    // =========================================
+
+    @EventHandler
+    public void onPlayerMove(
+            PlayerMoveEvent event
+    ) {
+
+        Player player =
+                event.getPlayer();
+
+        Location loc =
+                player.getLocation();
+
+        if (loc.getWorld() == null) {
+            return;
+        }
+
+        if (loc.getWorld()
+                .getName()
+                .equalsIgnoreCase("Hub")) {
+
+            if (
+                    loc.getBlockX() == -404
+                            && loc.getBlockY() >= 129
+                            && loc.getBlockY() <= 132
+                            && loc.getBlockZ() >= -775
+                            && loc.getBlockZ() <= -770
+            ) {
+
                 openSkyblockMenu(player);
-                player.sendMessage("§eJe bent in het Skyblock portaal gestapt!");
+
+                player.sendMessage(
+                        "§eJe bent in het Skyblock portaal gestapt!"
+                );
             }
         }
     }
 
-    // --- ESSENTIALS CHAT & JOIN INDELING ---
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        // Geef startgeld als ze nieuw zijn
-        if (!economyBalances.containsKey(player.getUniqueId())) {
-            economyBalances.put(player.getUniqueId(), 500.0);
-        }
-        event.setJoinMessage("§7[§a+§7] §e" + player.getName() + " is de server binnengevlogen!");
-    }
+
+    // =========================================
+    // JOIN
+    // =========================================
 
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent event) {
-        Player player = event.getPlayer();
-        // Hier kun je LuckPerms prefixes uitlezen, of een strakke basisindeling hanteren:
-        String prefix = player.isOp() ? "§4[Eigenaar] " : "§7[Speler] ";
-        event.setFormat(prefix + "§f" + player.getName() + " §8» §7" + event.getMessage());
+    public void onJoin(
+            PlayerJoinEvent event
+    ) {
+
+        Player player =
+                event.getPlayer();
+
+        if (!economyBalances.containsKey(
+                player.getUniqueId()
+        )) {
+
+            economyBalances.put(
+                    player.getUniqueId(),
+                    500.0
+            );
+        }
+
+        event.setJoinMessage(
+                "§7[§a+§7] §e"
+                        + player.getName()
+                        + " is de server binnengevlogen!"
+        );
+    }
+
+
+    // =========================================
+    // CHAT
+    // =========================================
+
+    @EventHandler
+    public void onChat(
+            AsyncPlayerChatEvent event
+    ) {
+
+        Player player =
+                event.getPlayer();
+
+        String prefix;
+
+        if (player.isOp()) {
+
+            prefix =
+                    "§4[Eigenaar] ";
+
+        } else {
+
+            prefix =
+                    "§7[Speler] ";
+        }
+
+        event.setFormat(
+                prefix
+                        + "§f"
+                        + player.getName()
+                        + " §8» §7"
+                        + event.getMessage()
+        );
     }
 }
