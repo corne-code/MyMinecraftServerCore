@@ -12,16 +12,13 @@ public class NPCActionListener implements Listener {
 
     private final NPCManager npcManager;
     private final NPCEditorManager editorManager;
-    private final NPCActionGUI actionGUI;
 
     public NPCActionListener(
             NPCManager npcManager,
-            NPCEditorManager editorManager,
-            NPCActionGUI actionGUI
+            NPCEditorManager editorManager
     ) {
         this.npcManager = npcManager;
         this.editorManager = editorManager;
-        this.actionGUI = actionGUI;
     }
 
     @EventHandler
@@ -55,82 +52,197 @@ public class NPCActionListener implements Listener {
                 );
 
         if (npc == null) {
+
             player.closeInventory();
 
             player.sendMessage(
                     ChatColor.RED
-                            + "Je bent geen NPC aan het bewerken."
+                            + "Je bewerkt geen NPC."
             );
 
             return;
         }
 
         boolean leftClick =
-                editorManager.isEditingLeftClick(player);
+                editorManager.isEditingLeftClick(
+                        player
+                );
 
-        NPCActionType actionType;
+        NPCActionType type;
 
         switch (item.getType()) {
 
             case BARRIER:
-                actionType = NPCActionType.NONE;
-                break;
+                type = NPCActionType.NONE;
+
+                saveAction(
+                        player,
+                        npc,
+                        type,
+                        "",
+                        leftClick
+                );
+                return;
 
             case COMMAND_BLOCK:
-                actionType = NPCActionType.COMMAND;
-                break;
+                type = NPCActionType.COMMAND;
+
+                startInput(
+                        player,
+                        type
+                );
+                return;
 
             case PAPER:
-                actionType = NPCActionType.MESSAGE;
-                break;
+                type = NPCActionType.MESSAGE;
+
+                startInput(
+                        player,
+                        type
+                );
+                return;
 
             case ENDER_PEARL:
-                actionType = NPCActionType.TELEPORT;
-                break;
+                type = NPCActionType.TELEPORT;
+
+                saveAction(
+                        player,
+                        npc,
+                        type,
+                        locationToString(
+                                player
+                        ),
+                        leftClick
+                );
+                return;
 
             case EMERALD:
-                actionType = NPCActionType.SHOP;
-                break;
+                type = NPCActionType.SHOP;
+
+                saveAction(
+                        player,
+                        npc,
+                        type,
+                        "survival",
+                        leftClick
+                );
+                return;
 
             case DIAMOND_SWORD:
-                actionType = NPCActionType.PVP;
-                break;
+                type = NPCActionType.PVP;
+
+                saveAction(
+                        player,
+                        npc,
+                        type,
+                        "",
+                        leftClick
+                );
+                return;
 
             case GRASS_BLOCK:
-                actionType = NPCActionType.SKYBLOCK;
-                break;
+                type = NPCActionType.SKYBLOCK;
+
+                saveAction(
+                        player,
+                        npc,
+                        type,
+                        "",
+                        leftClick
+                );
+                return;
 
             default:
                 return;
         }
+    }
+
+    private void startInput(
+            Player player,
+            NPCActionType type
+    ) {
+
+        editorManager.startInput(
+                player,
+                type
+        );
+
+        player.closeInventory();
+
+        player.sendMessage(
+                ChatColor.YELLOW
+                        + "Typ nu de waarde in de chat."
+        );
+
+        player.sendMessage(
+                ChatColor.GRAY
+                        + "Typ "
+                        + ChatColor.RED
+                        + "cancel"
+                        + ChatColor.GRAY
+                        + " om te annuleren."
+        );
+    }
+
+    private void saveAction(
+            Player player,
+            NPCData npc,
+            NPCActionType type,
+            String value,
+            boolean leftClick
+    ) {
 
         NPCAction action =
                 new NPCAction(
-                        actionType,
-                        ""
+                        type,
+                        value
                 );
 
         if (leftClick) {
 
-            npc.setLeftClickAction(action);
+            npc.setLeftClickAction(
+                    action
+            );
 
         } else {
 
-            npc.setRightClickAction(action);
+            npc.setRightClickAction(
+                    action
+            );
         }
 
         player.closeInventory();
 
         player.sendMessage(
                 ChatColor.GREEN
-                        + "Actie ingesteld: "
-                        + ChatColor.YELLOW
-                        + actionType.name()
+                        + "NPC-actie opgeslagen."
         );
 
-        /*
-         * Voor COMMAND, MESSAGE en TELEPORT
-         * vragen we hierna nog om extra informatie.
-         */
+        player.sendMessage(
+                ChatColor.GRAY
+                        + "Actie: "
+                        + ChatColor.YELLOW
+                        + type.name()
+        );
+    }
+
+    private String locationToString(
+            Player player
+    ) {
+
+        var location =
+                player.getLocation();
+
+        return location.getWorld().getName()
+                + ","
+                + location.getX()
+                + ","
+                + location.getY()
+                + ","
+                + location.getZ()
+                + ","
+                + location.getYaw()
+                + ","
+                + location.getPitch();
     }
 }
