@@ -2,29 +2,34 @@ name: Minecraft Plugin Compiler
 
 on:
   push:
-    branches: ["main", "master"]
-  workflow_dispatch:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Code ophalen
-        uses: actions/checkout@v4
+    # Stap 1: Haal de code op met de allernieuwste Node 24 ondersteunde actie
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Java 25 installeren
-        uses: actions/setup-java@v5
-        with:
-          java-version: "25"
-          distribution: "temurin"
-          cache: "maven"
+    # Stap 2: Zet Java 25 op en schakel Maven caching uit om corrupte downloads te voorkomen
+    - name: Set up JDK 25
+      uses: actions/setup-java@v4
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: 'maven'
 
-      - name: Plugin bouwen met Maven
-        run: mvn -B clean package
+    # Stap 3: Bouw de plugin met de verplichte -U vlag om de Purpur 26.2 dependency te forceren
+    - name: Build with Maven
+      run: mvn -B clean package -U
 
-      - name: Plugin JAR uploaden
-        uses: actions/upload-artifact@v4
-        with:
-          name: TriCraftCore-Plugin
-          path: target/TriCraftCore.jar
+    # Stap 4: Sla de gemaakte plugin op als downloadbaar bestand
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ServerCore-Plugin
+        path: target/ServerCore.jar
