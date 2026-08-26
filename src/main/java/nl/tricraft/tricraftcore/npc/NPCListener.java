@@ -1,27 +1,25 @@
 package nl.tricraft.tricraftcore.npc;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.NamespacedKey;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class NPCListener implements Listener {
 
-    private final JavaPlugin plugin;
     private final NPCManager npcManager;
-
     private final NamespacedKey npcKey;
 
     public NPCListener(
-            JavaPlugin plugin,
+            org.bukkit.plugin.java.JavaPlugin plugin,
             NPCManager npcManager
     ) {
-        this.plugin = plugin;
         this.npcManager = npcManager;
 
         this.npcKey = new NamespacedKey(
@@ -35,9 +33,8 @@ public class NPCListener implements Listener {
             PlayerInteractEntityEvent event
     ) {
 
-        Player player = event.getPlayer();
-
-        Entity entity = event.getRightClicked();
+        Entity entity =
+                event.getRightClicked();
 
         String npcId =
                 entity.getPersistentDataContainer()
@@ -50,6 +47,11 @@ public class NPCListener implements Listener {
             return;
         }
 
+        event.setCancelled(true);
+
+        Player player =
+                event.getPlayer();
+
         NPCData npc =
                 npcManager.getNPCById(npcId);
 
@@ -57,33 +59,66 @@ public class NPCListener implements Listener {
             return;
         }
 
-        event.setCancelled(true);
+        NPCAction action =
+                npc.getRightClickAction();
 
-        switch (npc.getType()) {
+        executeAction(
+                player,
+                action
+        );
+    }
 
-            case SURVIVAL:
+    private void executeAction(
+            Player player,
+            NPCAction action
+    ) {
+
+        if (action == null) {
+            return;
+        }
+
+        NPCActionType type =
+                action.getType();
+
+        String value =
+                action.getValue();
+
+        switch (type) {
+
+            case NONE:
+                break;
+
+            case MESSAGE:
 
                 player.sendMessage(
-                        ChatColor.GREEN
-                                + "Je gaat naar Survival."
+                        ChatColor.translateAlternateColorCodes(
+                                '&',
+                                value
+                        )
                 );
 
                 break;
 
-            case SKYBLOCK:
+            case COMMAND:
 
-                player.sendMessage(
-                        ChatColor.GREEN
-                                + "Skyblock wordt geopend."
+                String command = value;
+
+                if (command.startsWith("/")) {
+                    command = command.substring(1);
+                }
+
+                Bukkit.dispatchCommand(
+                        player,
+                        command
                 );
 
                 break;
 
-            case PVP:
+            case TELEPORT:
 
-                player.sendMessage(
-                        ChatColor.RED
-                                + "PvP-menu wordt geopend."
+                teleportPlayer(
+                        player,
+                        value
                 );
 
                 break;
@@ -92,10 +127,100 @@ public class NPCListener implements Listener {
 
                 player.sendMessage(
                         ChatColor.GOLD
-                                + "Shop wordt geopend."
+                                + "Shop wordt binnenkort geopend."
                 );
 
                 break;
+
+            case PVP:
+
+                player.sendMessage(
+                        ChatColor.RED
+                                + "PvP-menu wordt binnenkort geopend."
+                );
+
+                break;
+
+            case SKYBLOCK:
+
+                player.sendMessage(
+                        ChatColor.GREEN
+                                + "Skyblock wordt binnenkort geopend."
+                );
+
+                break;
+        }
+    }
+
+    private void teleportPlayer(
+            Player player,
+            String value
+    ) {
+
+        try {
+
+            String[] parts =
+                    value.split(",");
+
+            if (parts.length < 4) {
+                return;
+            }
+
+            String worldName =
+                    parts[0];
+
+            double x =
+                    Double.parseDouble(parts[1]);
+
+            double y =
+                    Double.parseDouble(parts[2]);
+
+            double z =
+                    Double.parseDouble(parts[3]);
+
+            float yaw = 0;
+            float pitch = 0;
+
+            if (parts.length >= 6) {
+
+                yaw =
+                        Float.parseFloat(parts[4]);
+
+                pitch =
+                        Float.parseFloat(parts[5]);
+            }
+
+            org.bukkit.World world =
+                    Bukkit.getWorld(worldName);
+
+            if (world == null) {
+
+                player.sendMessage(
+                        ChatColor.RED
+                                + "De wereld bestaat niet."
+                );
+
+                return;
+            }
+
+            Location location =
+                    new Location(
+                            world,
+                            x,
+                            y,
+                            z,
+                            yaw,
+                            pitch
+                    );
+
+            player.teleport(location);
+
+        } catch (Exception e) {
+
+            player.sendMessage(
+                    ChatColor.RED
+                            + "Ongeldige teleportlocatie."
+            );
         }
     }
 }
