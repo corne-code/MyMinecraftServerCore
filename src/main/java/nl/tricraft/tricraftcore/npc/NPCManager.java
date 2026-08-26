@@ -1,39 +1,125 @@
 package nl.tricraft.tricraftcore.npc;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NPCManager {
 
-    private final Map<String, NPCData> npcs = new HashMap<>();
+    private final List<NPCData> npcs =
+            new ArrayList<>();
+
+    // =========================
+    // NPC TOEVOEGEN
+    // =========================
 
     public void addNPC(NPCData npc) {
-        npcs.put(npc.getId().toLowerCase(), npc);
+
+        if (npc == null) {
+            return;
+        }
+
+        // Voorkom dubbele ID's
+        if (getNPCById(npc.getId()) != null) {
+            return;
+        }
+
+        npcs.add(npc);
     }
 
-    public void removeNPC(String id) {
-        npcs.remove(id.toLowerCase());
-    }
+    // =========================
+    // NPC VERWIJDEREN
+    // =========================
 
-    public NPCData getNPC(String id) {
-        return npcs.get(id.toLowerCase());
-    }
+    public void removeNPC(String name) {
 
-    public Collection<NPCData> getNPCs() {
-        return npcs.values();
-    }
+        NPCData npc =
+                getNPC(name);
 
-    public boolean exists(String id) {
-        return npcs.containsKey(id.toLowerCase());
-    public NPCData getNPCById(String id) {
-
-    for (NPCData npc : npcs.values()) {
-
-        if (npc.getId().equalsIgnoreCase(id)) {
-            return npc;
+        if (npc != null) {
+            npcs.remove(npc);
         }
     }
 
-    return null;
+    public void removeNPC(NPCData npc) {
+
+        if (npc != null) {
+            npcs.remove(npc);
+        }
+    }
+
+    // =========================
+    // NPC OP NAAM
+    // =========================
+
+    public NPCData getNPC(String name) {
+
+        for (NPCData npc : npcs) {
+
+            if (npc.getName()
+                    .equalsIgnoreCase(name)) {
+
+                return npc;
+            }
+        }
+
+        return null;
+    }
+
+    // =========================
+    // NPC OP ID
+    // =========================
+
+    public NPCData getNPCById(String id) {
+
+        if (id == null) {
+            return null;
+        }
+
+        for (NPCData npc : npcs) {
+
+            if (npc.getId()
+                    .equals(id)) {
+
+                return npc;
+            }
+        }
+
+        return null;
+    }
+
+    // =========================
+    // BESTAAT NPC?
+    // =========================
+
+    public boolean exists(String name) {
+
+        return getNPC(name) != null;
+    }
+
+    // =========================
+    // ALLE NPC'S
+    // =========================
+
+    public List<NPCData> getNPCs() {
+
+        return npcs;
+    }
+
+    // =========================
+    // ALLES WISSEN
+    // =========================
+
+    public void clear() {
+
+        npcs.clear();
+    }
+
+    // =========================
+    // AANTAL NPC'S
+    // =========================
+
+    public int size() {
+
+        return npcs.size();
+    }
 }
