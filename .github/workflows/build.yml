@@ -10,47 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Code ophalen van GitHub
+      - name: Code ophalen
         uses: actions/checkout@v4
 
-      - name: Java installeren
+      - name: Java 25 installeren
         uses: actions/setup-java@v5
         with:
           java-version: "25"
           distribution: "temurin"
+          cache: "maven"
 
-      - name: Purpur API downloaden
-        run: |
-          mkdir -p lib
-          curl -fL \
-            "https://api.purpurmc.org/v2/purpur/26.2/latest/download" \
-            -o lib/purpur.jar
-
-      - name: Alle Java bestanden verzamelen
-        run: |
-          find src/main/java -name "*.java" > sources.txt
-          echo "Java bestanden:"
-          cat sources.txt
-
-      - name: Alle Java bestanden compileren
-        run: |
-          mkdir -p out
-          javac \
-            -encoding UTF-8 \
-            -d out \
-            -cp "lib/purpur.jar" \
-            @sources.txt
-
-      - name: plugin.yml kopiëren
-        run: |
-          cp src/main/resources/plugin.yml out/
-
-      - name: JAR maken
-        run: |
-          jar cf ServerCore.jar -C out .
+      - name: Plugin bouwen met Maven
+        run: mvn -B clean package
 
       - name: Plugin JAR uploaden
         uses: actions/upload-artifact@v4
         with:
-          name: ServerCore-Plugin
-          path: ServerCore.jar
+          name: TriCraftCore-Plugin
+          path: target/TriCraftCore.jar
